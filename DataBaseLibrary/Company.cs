@@ -48,11 +48,7 @@ namespace DAL
                 this.Id = Convert.ToInt32(dataRow["Id"]);
                 this.Name = dataRow["Name"].ToString();
                 this.Info = dataRow["Info"].ToString();
-
-                if (!DBNull.Value.Equals(dataRow["ParentId"]))
-                    this.ParentId = (int?)dataRow["ParentId"];
-                else
-                    this.ParentId = null;
+                this.ParentId = !DBNull.Value.Equals(dataRow["ParentId"]) ? (int?)dataRow["ParentId"] : this.ParentId = null;
             }
             catch (Exception)
             {
