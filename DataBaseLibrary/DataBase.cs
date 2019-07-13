@@ -40,31 +40,6 @@ namespace DAL
                 throw;
             }
         }
-
-        /// <summary>
-        /// Заполняет данными <seealso cref="Table"/>.
-        /// </summary>
-        /// <param name="tableName">Наименование таблицы в базе данных.</param>
-        /// <param name="what">Задать столбцы для выборки. Если передана строка "*", то будет произведена выборка всей таблицы.</param>
-        /// <param name="where">Задать условие выборки. Если строка пуста или null, будет произведена полная выборка.</param>
-        public void FillTable(string tableName, string what, string where)
-        {
-            try
-            {
-                Table = new DataTable();
-                string selectCommandText = "SELECT " + what + " FROM [" + tableName + "]";
-                if (where != "" && where != null)
-                {
-                    selectCommandText += " WHERE " + where;
-                }
-                dataAdapter = new SqlDataAdapter(selectCommandText, sqlConnection);
-                dataAdapter.Fill(Table);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
         
         /// <summary>
         /// Заполняет таблицу компаниями из базы данных.
