@@ -41,18 +41,8 @@ namespace Employees
             companies.Clear();
             employees.Clear();
 
-            //  Загружаем таблицу компаний и записываем её в список.
-            dataBase.FillTableCompanies();
-            foreach (DataRow dataRow in dataBase.Table.Rows)
-            {
-                companies.Add(new Company(dataRow));
-            }
-            //  Загружаем таблицу работников и записываем её в список.
-            dataBase.FillTableEmployees();
-            foreach (DataRow dataRow in dataBase.Table.Rows)
-            {
-                employees.Add(new Employee(dataRow));
-            }
+            companies = dataBase.GetAll<Company>();
+            employees = dataBase.GetAll<Employee>();
         }
         /// <summary>
         /// Заполняет дерево компаниями из списка компаний.

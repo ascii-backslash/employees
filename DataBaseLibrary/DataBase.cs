@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data;
 using System.Data.SqlClient;
+using System.Reflection;
 
 namespace DAL
 {
@@ -16,7 +17,6 @@ namespace DAL
         private SqlConnection sqlConnection;
         private SqlDataAdapter dataAdapter;
         private SqlCommand sqlCommand;
-
         /// <summary>
         /// Возвращает или задаёт объект типа <seealso cref="DataTable"/>.
         /// </summary>
@@ -40,23 +40,39 @@ namespace DAL
                 throw;
             }
         }
-        
+
         /// <summary>
-        /// Заполняет таблицу компаниями из базы данных.
+        /// Возвращает список объектов указанного класса из базы данных.
         /// </summary>
-        public void FillTableCompanies()
+        /// <typeparam name="T">Класс возвращаемых объектов.</typeparam>
+        /// <returns></returns>
+        public List<T> GetAll<T>() where T : class
         {
-            try
+            //  Определяем класс объекта.
+            Type type = typeof(T);
+            //  Пытаемся найти подходящий public конструктор, принимающий DataRow в качестве параметра.
+            ConstructorInfo constructorInfo = type.GetConstructor(new Type[] { typeof(DataRow) });
+            //  Если конструктор найден.
+            if (constructorInfo != null)
             {
-                Table = new DataTable();
-                dataAdapter = new SqlDataAdapter("SELECT * FROM [Company]", sqlConnection);
-                dataAdapter.Fill(Table);
+                DataTable table = new DataTable();
+                dataAdapter = new SqlDataAdapter("SELECT * FROM [" + type.Name + "]", sqlConnection);
+                dataAdapter.Fill(table);
+
+                List<T> objectsList = new List<T>();
+
+                //  Пробегаемся по строкам таблицы БД и заполняем объектами список.
+                foreach (DataRow dataRow in table.Rows)
+                {
+                    //  Вызываем найденный конструктор и заполняем список.
+                    objectsList.Add((T)constructorInfo.Invoke(new object[] { dataRow } ));
+                }
+
+                return objectsList;
             }
-            catch (Exception)
-            {
-                throw;
-            }
+            else return null;
         }
+
         /// <summary>
         /// Добавляет компанию в базу данных.
         /// </summary>
@@ -119,23 +135,6 @@ namespace DAL
                 throw;
             }
         }
-        /// <summary>
-        /// Заполняет таблицу сотрудниками из базы данных.
-        /// </summary>
-        public void FillTableEmployees()
-        {
-            try
-            {
-                Table = new DataTable();
-                dataAdapter = new SqlDataAdapter("SELECT * FROM [Employee]", sqlConnection);
-                dataAdapter.Fill(Table);
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-        /// <summary>
         /// Добавляет сотрудника в базу данных.
         /// </summary>
         /// <param name="employee">Объект сотрудника.</param>
