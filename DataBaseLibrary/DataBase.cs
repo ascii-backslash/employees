@@ -47,7 +47,6 @@ namespace DAL
         /// <typeparam name="T">Класс возвращаемых объектов.</typeparam>
         /// <returns></returns>
         public List<T> GetAll<T>() where T : class
-
         {
             //  Определяем класс объекта.
             Type type = typeof(T);
@@ -136,9 +135,29 @@ namespace DAL
                 throw;
             }
         }
-        public T Get<T>()
+
+        /// <summary>
+        /// Возвращает объект заданного класса из таблицы данных по Id.
+        /// </summary>
+        /// <typeparam name="T">Класс объекта.</typeparam>
+        /// <param name="Id">Уникальный номер объекта.</param>
+        /// <returns></returns>
+        public T Get<T>(int Id) where T : class
         {
-            return default(T);
+            //  Определяем класс объекта.
+            Type type = typeof(T);
+            //  Пытаемся найти подходящий public конструктор, принимающий DataRow в качестве параметра.
+            ConstructorInfo constructorInfo = type.GetConstructor(new Type[] { typeof(DataRow) });
+            //  Если конструктор найден.
+            if (constructorInfo != null)
+            {
+                DataTable table = new DataTable();
+                dataAdapter = new SqlDataAdapter("SELECT * FROM[" + type.Name + "] WHERE Id=" + Id, sqlConnection);
+                dataAdapter.Fill(table);
+
+                return (T)constructorInfo.Invoke(new object[] { table.Rows[0] });
+            }
+            else return default(T);
         }
 
         /// <summary>
