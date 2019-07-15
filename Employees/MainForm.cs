@@ -207,7 +207,7 @@ namespace Employees
             if (new CompanyEditorForm(ref company).ShowDialog() == DialogResult.OK)
             {
                 //  Добавляем компанию в базу.
-                dataBase.InsertCompany(company);
+                dataBase.Insert(company);
                 //  Обновляем и выводим новые данные.
                 UploadDataFromDataBase();
                 FillTreeViewFromCompanyList();
@@ -294,7 +294,7 @@ namespace Employees
 
                 if (new EmployeeEditorForm(ref employee).ShowDialog() == DialogResult.OK)
                 {
-                    dataBase.InsertEmployee(employee);
+                    dataBase.Insert(employee);
                     employees.Add(employee);
                     RefreshDataGridView();
                 }

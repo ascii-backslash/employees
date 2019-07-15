@@ -50,17 +50,21 @@ namespace DAL
         /// </summary>
         public Sexes Sex { get; set; }
         /// <summary>
+        /// Возвращает или задаёт должность данного работника.
+        /// </summary>
+        public string Position { get; set; }
+        /// <summary>
+        /// Возвращает или задаёт номер телефона данного работника.
+        /// </summary>
+        public string PhoneNumber { get; set; }
+        /// <summary>
         /// Возвращает или задаёт адрес электронной почты данного работника.
         /// </summary>
         public string Email { get; set; }
         /// <summary>
         /// Возвращает или задаёт дату устройства на работу.
         /// </summary>
-        public DateTime DateOfHiring { get; set; }
-        /// <summary>
-        /// Возвращает или задаёт номер телефона данного работника.
-        /// </summary>
-        public string PhoneNumber { get; set; }
+        public DateTime DateOfHiring { get; set; }       
         /// <summary>
         /// Возвращает или задаёт адрес проживания данного работника.
         /// </summary>
@@ -69,10 +73,6 @@ namespace DAL
         /// Возвращает или задаёт заметку о данном работнике.
         /// </summary>
         public string Note { get; set; }
-        /// <summary>
-        /// Возвращает или задаёт должность данного работника.
-        /// </summary>
-        public string Position { get; set; }
         /// <summary>
         /// Возвращает или задаёт уникальный номер компании, к которой относится данный работник.
         /// </summary>

@@ -47,6 +47,7 @@ namespace DAL
         /// <typeparam name="T">Класс возвращаемых объектов.</typeparam>
         /// <returns></returns>
         public List<T> GetAll<T>() where T : class
+
         {
             //  Определяем класс объекта.
             Type type = typeof(T);
@@ -72,20 +73,38 @@ namespace DAL
             }
             else return null;
         }
-
         /// <summary>
-        /// Добавляет компанию в базу данных.
+        /// Добавляет заданный объект указанного класса в базу данных.
         /// </summary>
-        /// <param name="company">Объект компании.</param>
-        public void InsertCompany(Company company)
+        /// <typeparam name="T">Класс объекта.</typeparam>
+        /// <param name="entity">Объект класса.</param>
+        public void Insert<T>(T entity) where T : class
         {
             try
             {
+                //  Определяем класс объекта.
+                Type type = typeof(T);
+                //  Заполняем массив свойств этого объекта.
+                PropertyInfo[] propertyInfos = type.GetProperties();
+                //  Создаём массив строк имён свойств (Все свойства, кроме Id).
+                string[] propertyNames = new string[propertyInfos.Length - 1];
+                //  Бежим по массиву свойств объекта, начиная со второго.
+                for (int i = 1; i < propertyInfos.Length; i++)
+                {
+                    propertyNames[i - 1] = "@" + propertyInfos[i].Name;
+                }
+                //  Формируем SQL-запрос.
+                string cmdText = "INSERT INTO [" + type.Name + "] VALUES(" + string.Join(", ", propertyNames) + ")";
+
                 sqlConnection.Open();
-                sqlCommand = new SqlCommand("INSERT INTO [Company] VALUES(@Name, @Info, @ParentId)", sqlConnection);
-                sqlCommand.Parameters.AddWithValue("@Name", company.Name);
-                sqlCommand.Parameters.AddWithValue("@Info", company.Info);
-                sqlCommand.Parameters.AddWithValue("@ParentId", company.ParentId);
+                sqlCommand = new SqlCommand(cmdText, sqlConnection);
+                //  Добавляем необходимые параметры в запрос.
+                for (int i = 1; i < propertyInfos.Length; i++)
+                {
+                    object value = type.InvokeMember(propertyInfos[i].Name, BindingFlags.GetProperty, null, entity, null);
+                    sqlCommand.Parameters.AddWithValue(propertyNames[i - 1], value ?? DBNull.Value);
+                }
+                //  Выполняем запрос.
                 sqlCommand.ExecuteNonQuery();
                 sqlConnection.Close();
             }
@@ -94,6 +113,34 @@ namespace DAL
                 throw;
             }
         }
+
+        public void Update<T>()
+        {
+            try
+            {
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+        public void Delete<T>()
+        {
+            try
+            {
+
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+        public T Get<T>()
+        {
+            return default(T);
+        }
+
         /// <summary>
         /// Обновляет данные о компании в базе данных.
         /// </summary>
@@ -135,35 +182,7 @@ namespace DAL
                 throw;
             }
         }
-        /// Добавляет сотрудника в базу данных.
-        /// </summary>
-        /// <param name="employee">Объект сотрудника.</param>
-        public void InsertEmployee(Employee employee)
-        {
-            try
-            {
-                sqlConnection.Open();
-                sqlCommand = new SqlCommand("INSERT INTO [Employee] VALUES(@Name, @Surname, @Patronymic, @Birthday, @Sex, @Position, @PhoneNumber, @Email, @DateOfHiring, @Address, @Note, @CompanyId)", sqlConnection);
-                sqlCommand.Parameters.AddWithValue("@Name", employee.Name);
-                sqlCommand.Parameters.AddWithValue("@Surname", employee.Surname);
-                sqlCommand.Parameters.AddWithValue("@Patronymic", employee.Patronymic);
-                sqlCommand.Parameters.AddWithValue("@Birthday", employee.Birthday);
-                sqlCommand.Parameters.AddWithValue("@Sex", employee.Sex);
-                sqlCommand.Parameters.AddWithValue("@Position", employee.Position);
-                sqlCommand.Parameters.AddWithValue("@PhoneNumber", employee.PhoneNumber);
-                sqlCommand.Parameters.AddWithValue("@Email", employee.Email);
-                sqlCommand.Parameters.AddWithValue("@DateOfHiring", employee.DateOfHiring);
-                sqlCommand.Parameters.AddWithValue("@Address", employee.Address);
-                sqlCommand.Parameters.AddWithValue("@Note", employee.Note);
-                sqlCommand.Parameters.AddWithValue("@CompanyId", employee.CompanyId);
-                sqlCommand.ExecuteNonQuery();
-                sqlConnection.Close();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
+
         /// <summary>
         /// Обновляет запись сотрудника компании.
         /// </summary>
