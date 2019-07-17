@@ -17,10 +17,6 @@ namespace DAL
         private SqlConnection sqlConnection;
         private SqlDataAdapter dataAdapter;
         private SqlCommand sqlCommand;
-        /// <summary>
-        /// Возвращает или задаёт объект типа <seealso cref="DataTable"/>.
-        /// </summary>
-        public DataTable Table { get; set; }
 
         /// <summary>
         /// Инициализирует объект для работы с базой данных.
@@ -33,7 +29,6 @@ namespace DAL
             {
                 sqlConnection = new SqlConnection(connectionString);
                 dataAdapter = new SqlDataAdapter();
-                Table = new DataTable();
             }
             catch (Exception)
             {
@@ -112,32 +107,74 @@ namespace DAL
                 throw;
             }
         }
-
-        public void Update<T>()
-        {
-            try
-            {
-
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-        public void Delete<T>()
-        {
-            try
-            {
-
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
         /// <summary>
-        /// Возвращает объект заданного класса из таблицы данных по Id.
+        /// Производит обновление данных указанного объекта заданного класса в базе данных.
+        /// </summary>
+        /// <typeparam name="T">Класс объекта.</typeparam>
+        /// <param name="entity">Объект класса.</param>
+        public void Update<T>(T entity)
+        {
+            try
+            {
+                //  Определяем класс объекта.
+                Type type = typeof(T);
+                //  Заполняем массив свойств этого объекта.
+                PropertyInfo[] propertyInfos = type.GetProperties();
+                //  Создаём массив строк имён свойств.
+                string[] propertyNames = new string[propertyInfos.Length];
+                propertyNames[0] = "@" + propertyInfos[0].Name;
+                
+                //  Формируем SQL-запрос.
+                string cmdText = "UPDATE [" + type.Name + "] SET ";
+                //  Бежим по массиву свойств объекта, начиная со второго.
+                for (int i = 1; i < propertyInfos.Length; i++)
+                {
+                    propertyNames[i] = "@" + propertyInfos[i].Name;
+                    cmdText += propertyInfos[i].Name + "=" + propertyNames[i];
+                    if ((i + 1) != propertyInfos.Length) cmdText += ", ";
+                }
+                cmdText += " WHERE Id=@Id";
+
+                sqlConnection.Open();
+                sqlCommand = new SqlCommand(cmdText, sqlConnection);
+                //  Добавляем необходимые параметры в запрос.
+                for (int i = 0; i < propertyInfos.Length; i++)
+                {
+                    object value = type.InvokeMember(propertyInfos[i].Name, BindingFlags.GetProperty, null, entity, null);
+                    sqlCommand.Parameters.AddWithValue(propertyNames[i], value ?? DBNull.Value);
+                }
+                //  Выполняем запрос.
+                sqlCommand.ExecuteNonQuery();
+                sqlConnection.Close();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+        /// <summary>
+        /// Удаляет объект указанного класса по уникальному номеру из базы данных.
+        /// </summary>
+        /// <typeparam name="T">Класс объекта.</typeparam>
+        /// <param name="Id">Уникальный номер.</param>
+        public void Delete<T>(int Id) where T : class
+        {
+            try
+            {
+                Type type = typeof(T);
+                sqlConnection.Open();
+                sqlCommand = new SqlCommand("DELETE FROM [" + type.Name + "] WHERE Id=@Id", sqlConnection);
+                sqlCommand.Parameters.AddWithValue("@Id", Id);
+                sqlCommand.ExecuteNonQuery();
+                sqlConnection.Close();
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+        /// <summary>
+        /// Возвращает объект заданного класса из таблицы данных по уникальному номеру.
         /// </summary>
         /// <typeparam name="T">Класс объекта.</typeparam>
         /// <param name="Id">Уникальный номер объекта.</param>
@@ -158,98 +195,6 @@ namespace DAL
                 return (T)constructorInfo.Invoke(new object[] { table.Rows[0] });
             }
             else return default(T);
-        }
-
-        /// <summary>
-        /// Обновляет данные о компании в базе данных.
-        /// </summary>
-        /// <param name="company">Объект компании.</param>
-        public void UpdateCompany(Company company)
-        {
-            try
-            {
-                sqlConnection.Open();
-                sqlCommand = new SqlCommand("UPDATE [Company] SET Name=@Name, Info=@Info, ParentId=@ParentId WHERE Id=@Id", sqlConnection);
-                sqlCommand.Parameters.AddWithValue("@Id", company.Id);
-                sqlCommand.Parameters.AddWithValue("@Name", company.Name);
-                sqlCommand.Parameters.AddWithValue("@Info", company.Info);
-                sqlCommand.Parameters.AddWithValue("@ParentId", company.ParentId);
-                sqlCommand.ExecuteNonQuery();
-                sqlConnection.Close();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-        /// <summary>
-        /// Удаляет компанию из базы данных.
-        /// </summary>
-        /// <param name="company">Объект компании.</param>
-        public void DeleteCompany(Company company)
-        {
-            try
-            {
-                sqlConnection.Open();
-                sqlCommand = new SqlCommand("DELETE FROM [Company] WHERE Id=@Id", sqlConnection);
-                sqlCommand.Parameters.AddWithValue("@Id", company.Id);
-                sqlCommand.ExecuteNonQuery();
-                sqlConnection.Close();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        /// <summary>
-        /// Обновляет запись сотрудника компании.
-        /// </summary>
-        /// <param name="employee">Объект сотрудника.</param>
-        public void UpdateEmployee(Employee employee)
-        {
-            try
-            {
-                sqlConnection.Open();
-                sqlCommand = new SqlCommand("UPDATE [Employee] SET Name=@Name, Surname=@Surname, Patronymic=@Patronymic, Birthday=@Birthday, Sex=@Sex, Position=@Position, PhoneNumber=@PhoneNumber, Email=@Email, DateOfHiring=@DateOfHiring, Address=@Address, Note=@Note WHERE Id=@Id", sqlConnection);
-                sqlCommand.Parameters.AddWithValue("@Id", employee.Id);
-                sqlCommand.Parameters.AddWithValue("@Name", employee.Name);
-                sqlCommand.Parameters.AddWithValue("@Surname", employee.Surname);
-                sqlCommand.Parameters.AddWithValue("@Patronymic", employee.Patronymic);
-                sqlCommand.Parameters.AddWithValue("@Birthday", employee.Birthday);
-                sqlCommand.Parameters.AddWithValue("@Sex", employee.Sex);
-                sqlCommand.Parameters.AddWithValue("@Position", employee.Position);
-                sqlCommand.Parameters.AddWithValue("@PhoneNumber", employee.PhoneNumber);
-                sqlCommand.Parameters.AddWithValue("@Email", employee.Email);
-                sqlCommand.Parameters.AddWithValue("@DateOfHiring", employee.DateOfHiring);
-                sqlCommand.Parameters.AddWithValue("@Address", employee.Address);
-                sqlCommand.Parameters.AddWithValue("@Note", employee.Note);
-                sqlCommand.ExecuteNonQuery();
-                sqlConnection.Close();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-        /// <summary>
-        /// Удаляет работника из базы данных.
-        /// </summary>
-        /// <param name="employee">Объект работника.</param>
-        public void DeleteEmployee(Employee employee)
-        {
-            try
-            {
-                sqlConnection.Open();
-                sqlCommand = new SqlCommand("DELETE FROM [Employee] WHERE Id=@Id", sqlConnection);
-                sqlCommand.Parameters.AddWithValue("@Id", employee.Id);
-                sqlCommand.ExecuteNonQuery();
-                sqlConnection.Close();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
         }
     }
 }

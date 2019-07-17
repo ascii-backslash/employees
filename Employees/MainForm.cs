@@ -122,7 +122,7 @@ namespace Employees
                     {
                         if (employee.CompanyId == company.Id)
                         {
-                            dataBase.DeleteEmployee(employee);
+                            dataBase.Delete<Employee>(employee.Id);
                         }
                     }
                     //  Удалим работников этой компании из списка работников.
@@ -149,7 +149,7 @@ namespace Employees
                 //  Удалить компанию, хранящуюся в узле.
                 Predicate<Company> childCompany = delegate (Company company) { return company.Id == (int)node.Tag; };
                 Company deletableCompany = companies.Find(childCompany);
-                dataBase.DeleteCompany(deletableCompany);
+                dataBase.Delete<Company>(deletableCompany.Id);
                 companies.Remove(deletableCompany);
             }
         }
@@ -225,7 +225,7 @@ namespace Employees
 
                 if (new CompanyEditorForm(ref editableCompany).ShowDialog() == DialogResult.OK)
                 {
-                    dataBase.UpdateCompany(editableCompany);
+                    dataBase.Update(editableCompany);
                     companyInfoTextBox.Clear();
                     UploadDataFromDataBase();
                     FillTreeViewFromCompanyList();
@@ -248,7 +248,7 @@ namespace Employees
 
                 //  Удаляем родительскую компанию.
                 Company deletableParentCompany = companies.Find(parentCompany);
-                dataBase.DeleteCompany(deletableParentCompany);
+                dataBase.Delete<Company>(deletableParentCompany.Id);
                 companies.Remove(deletableParentCompany);
 
                 //  Удаляем работников родительской компании из базы данных.
@@ -256,7 +256,7 @@ namespace Employees
                 {
                     if (deletableEmployee.CompanyId == (int)companyTreeView.SelectedNode.Tag)
                     {
-                        dataBase.DeleteEmployee(deletableEmployee);
+                        dataBase.Delete<Employee>(deletableEmployee.Id);
                     }
                 }
                 //  Удаляем работников из списка работников.
@@ -316,7 +316,7 @@ namespace Employees
 
                 if (new EmployeeEditorForm(ref editableEmployee).ShowDialog() == DialogResult.OK)
                 {
-                    dataBase.UpdateEmployee(editableEmployee);
+                    dataBase.Update(editableEmployee);
                     RefreshDataGridView();
                 }
             }
@@ -335,7 +335,7 @@ namespace Employees
                 Predicate<Employee> selectedEmployee = delegate (Employee employee) { return employee.Id == (int)employeeDataGridView.SelectedRows[0].Tag; };
                 Employee deletableEmployee = employees.Find(selectedEmployee);
 
-                dataBase.DeleteEmployee(deletableEmployee);
+                dataBase.Delete<Employee>(deletableEmployee.Id);
                 employees.RemoveAll(selectedEmployee);
 
                 RefreshDataGridView();
